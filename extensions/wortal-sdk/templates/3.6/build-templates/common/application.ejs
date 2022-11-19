@@ -1,0 +1,50 @@
+<%- include(versionCheckTemplate, { version: '1.0.0'}) %>
+let cc;
+
+export class Application {
+    constructor() {
+        this.settingsPath = '<%= settingsJsonPath %>';
+        this.showFPS = <%= showFPS %>;
+    }
+	
+	init(engine) {
+		cc = engine;
+        cc.game.onPostBaseInitDelegate.add(this.onPostInitBase.bind(this));
+        cc.game.onPostSubsystemInitDelegate.add(this.onPostSystemInit.bind(this));
+        onProgress(10);
+	}
+	
+	onPostInitBase() {
+        // cc.settings.overrideSettings('assets', 'server', '');
+        // Custom logic goes here.
+		onProgress(20);
+    }
+	
+	onPostSystemInit() {
+        // Custom logic goes here.
+    }
+	
+	start () {
+        return cc.game.init({
+            debugMode: <%= debugMode %> ? cc.DebugMode.INFO : cc.DebugMode.ERROR,
+            settingsPath: this.settingsPath,
+            overrideSettings: {
+                // assets: {
+                //      preloadBundles: [{ bundle: 'main', version: 'xxx' }],
+                // }
+                profiling: {
+                    showFPS: this.showFPS,
+                }
+            }
+        }).then(function () {
+            onProgress(100)
+            return cc.game.run();
+          });
+    }
+}
+  
+function onProgress(percent){
+  if (window.wortalGame) {
+      window.wortalGame.setLoadingProgress(percent);
+  };
+}
