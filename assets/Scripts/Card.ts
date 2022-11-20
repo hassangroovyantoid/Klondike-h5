@@ -434,7 +434,13 @@ export class Card extends Component {
           this.useLocalassets();
           break;
         case "Remote":
-          this.useAssetBundle();
+          try {
+            this.useAssetBundle();
+          } catch (error) {
+            this.useLocalassets();
+            console.error(`[Card] Failed to load remote assets, local assets have been loaded instead. ${error}`);
+          }
+          
           break;
       }
 
