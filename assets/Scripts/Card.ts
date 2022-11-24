@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, SpriteFrame, Prefab, Sprite, assetManager, ImageAsset, Texture2D, CCString } from 'cc';
+import { _decorator, Component, Node, SpriteFrame, Prefab, Sprite, assetManager, ImageAsset, Texture2D, CCString, resources } from 'cc';
 import { Suit } from './Suit';
 import { Rank } from './Rank';
 import { Direction } from './Direction'; 
@@ -7,6 +7,7 @@ import { Stock } from './Stock';
 import { Location } from './Location';
 import { Color } from './Color';
 import { Tableau } from './Tableau';
+import { BundleLoader } from './BundleLoader';
 const { ccclass, property } = _decorator;
 
 @ccclass('Card')
@@ -114,7 +115,7 @@ export class Card extends Component {
     })
     private _spades: string[] = [];
 
-    public bundle;
+    public bundle: any = null;
 
 
 
@@ -135,6 +136,11 @@ export class Card extends Component {
 
     public spriteframeToUse: SpriteFrame
 
+    private remoteAssetUrl;
+
+    private onLoadImageCallback: () => void;
+    private shouldInvokeImageCallback: boolean = false;
+
     onLoad() {
         (window as any).clickCount = 0;
         (window as any).firstCardData;
@@ -145,18 +151,32 @@ export class Card extends Component {
         (window as any).flipBackCard = false;
         (window as any).clickLocation;
         (window as any).assets;
+    }
 
-        assetManager.loadBundle('http://localhost/remote/klondike-assets/', (err, bundle) => {
-        try {
-          console.log("Bundle loaded succefully!");
-          let spriteframeToUse: SpriteFrame;
-          this.bundle = bundle;
-          this.spriteframeToUse = bundle.get(`CardBack`, SpriteFrame);
-        } catch {
-          console.log(`Error occured: ${err}`)
+    getBundleRef()
+    {
+      if(this.bundle == null)
+      {
+        console.log("bundle is null, will try to get it");
+        this.bundle = BundleLoader.instance.bundle;
+
+        if(this.bundle != null) 
+        {
+          console.log("got bundle!");
+          this.spriteframeToUse = this.bundle.get(`CardBack`, SpriteFrame);
+          return true;
         }
-        
-      });
+        else
+        {
+          console.log("bundle could not be gotten");
+          return false;
+        }
+      }
+      else
+      {
+        console.log("bundle already there");
+        return true;
+      }
     }
 
     start() {
@@ -284,10 +304,8 @@ export class Card extends Component {
 
         this._sprite = this.getComponent(Sprite);
         console.log(`suit: ${this._suit} rank: ${this._rank} direction: ${this._direction}`);
-        (window as any).assets = "Local";
+        (window as any).assets = "Remote";
     }
-
-    private remoteAssetUrl: string;
 
 
 
@@ -348,12 +366,14 @@ export class Card extends Component {
      * @returns The URL of Card's image.
      */
     getCardImageUrl(pathEnd: string): void {
-      this.remoteAssetUrl = `http://localhost/klondike-assets/${pathEnd}.png`;
+      //this.remoteAssetUrl = `http://localhost/klondike-assets/${pathEnd}.png`;
     }
 
 
 
     useLocalassets() {
+      
+      console.log("chose local assets :(");
       console.log("[Assets] Local assets are loaded.")
       let clubsArray: SpriteFrame[] = [this.ClubsA, this.Clubs2, this.Clubs3, this.Clubs4, this.Clubs5, this.Clubs6, this.Clubs7, this.Clubs8, this.Clubs9, this.Clubs10, this.ClubsJ, this.ClubsQ, this.ClubsK];
       let diamondsArray: SpriteFrame[] = [this.DiamondsA, this.Diamonds2, this.Diamonds3, this.Diamonds4, this.Diamonds5, this.Diamonds6, this.Diamonds7, this.Diamonds8, this.Diamonds9, this.Diamonds10, this.DiamondsJ, this.DiamondsQ, this.DiamondsK];
@@ -375,14 +395,47 @@ export class Card extends Component {
           this._sprite.spriteFrame = spadesArray[this.ranksArray.indexOf(this.rankToString())];
           break;
       }
+
+      if(this.shouldInvokeImageCallback)
+      {
+        this.onLoadImageCallback();
+        this.shouldInvokeImageCallback = false;
+      }
+
     }
 
+    
     useAssetBundle() {
+  
+      
+      console.log("chose asset bundle yay");
+
       let self = this;
-      this.bundle.load(`${this.suitToString()}${this.ranksArray.indexOf(this.rankToString()) + 1}/spriteFrame`, SpriteFrame, function (err, spriteFrame, ) {
+      console.log("loading card from bundle " + `${this.suitToString()}${this.ranksArray.indexOf(this.rankToString()) + 1}/spriteFrame`);
+      try{
+      this.bundle.load(`${this.suitToString()}${this.ranksArray.indexOf(this.rankToString()) + 1}/spriteFrame`, SpriteFrame, function (err, spriteFrame ) {
+
+        if(err)
+        {
+          console.log("errr " + err);
+        }
+
+        console.log(spriteFrame);
+
         console.log(`Asset bundle Spriteframe is: ${self.rankToString()} of ${self.suitToString()}`);
         self.getComponent(Sprite).spriteFrame = spriteFrame;
+
+        if(self.shouldInvokeImageCallback)
+        {
+          self.onLoadImageCallback();
+          self.shouldInvokeImageCallback = false;
+        }
+
       })
+    }
+    catch(e){
+      console.log("- " + e);
+    }
     }
 
     useRemoteAssets() {
@@ -415,37 +468,62 @@ export class Card extends Component {
                 spriteFrame.texture = texture;
 
                 self.getComponent(Sprite).spriteFrame = spriteFrame;
+
+                if(self.shouldInvokeImageCallback)
+                {
+                  self.onLoadImageCallback();
+                  self.shouldInvokeImageCallback = false;
+                }
+
               } catch {
                 console.log(`[Assets] Could not load remote Spriteframes, ${err}`);
               }
           });
     }
 
+    setOnImageLoadCallback(callback: () => void)
+    {
+      this.onLoadImageCallback = callback;
+      this.shouldInvokeImageCallback = true;
+    }
+
     /**
    * Flips the card over to the opposite direction and changes the card back spriteframe.
    */
   flip(): void {
+
+    this.getBundleRef();
+
     this._direction = Direction.Up;
-    try {
-      console.log(`[Assets] Assets type: ${(window as any).assets}`);
 
-      switch((window as any).assets) {
-        case "Local":
-          this.useLocalassets();
-          break;
-        case "Remote":
-          try {
-            this.useAssetBundle();
-          } catch (error) {
+    if(this.bundle == null)
+    {
+      this.useLocalassets();
+    }
+    else
+    {
+      try
+      {
+        console.log(`[Assets] Assets type: ${(window as any).assets}`);
+
+        switch((window as any).assets) {
+          case "Local":
             this.useLocalassets();
-            console.error(`[Card] Failed to load remote assets, local assets have been loaded instead. ${error}`);
-          }
-          
-          break;
-      }
+            break;
+          case "Remote":
+            try {
+              this.useAssetBundle();
+            } catch (error) {
+              this.useLocalassets();
+              console.error(`[Card] Failed to load remote assets, local assets have been loaded instead. ${error}`);
+            }
+            
+            break;
+        }
 
-    } catch (e) {
-      console.error(`[Card] Failed to load card face sprite for: ${this.rankSuitToString()} ${e}`);
+      } catch (e) {
+        console.error(`[Card] Failed to load card face sprite for: ${this.rankSuitToString()} ${e}`);
+      }
     }
     console.log(`[Card] Flipped upwards: ${this.rankSuitToString()} in: ${this.locationToString()}`);
     // } else {

@@ -38,7 +38,7 @@
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {
-        "trimType": "auto",
+        "trimType": "none",
         "trimThreshold": 1,
         "rotated": false,
         "offsetX": 0,
@@ -70,6 +70,9 @@
     "type": "sprite-frame",
     "fixAlphaTransparencyArtifacts": true,
     "hasAlpha": true,
-    "redirect": "7144b262-528b-44ab-aee3-036e930e23a7@f9941"
+    "redirect": "7144b262-528b-44ab-aee3-036e930e23a7@f9941",
+    "compressSettings": {
+      "useCompressTexture": false
+    }
   }
 }

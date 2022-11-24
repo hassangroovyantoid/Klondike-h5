@@ -8,6 +8,7 @@ import { AssetLoader } from './AssetLoader';
 import { Stock } from './Stock';
 import { Deck } from './Deck';
 import { Direction } from './Direction';
+import { LoadingScreen } from './LoadingScreen';
 const { ccclass, property } = _decorator;
 
 @ccclass('Tableau')
@@ -32,6 +33,8 @@ export class Tableau extends Component {
 
     tableauxArray = [this.firstTableau, this.secondTableau, this.thirdTableau, this.fourthTableau, this.fifthTableau, this.sixthTableau, this.seventhTableau];
     tableauxLocationsArray = [Location.TableauOne, Location.TableauTwo, Location.TableauThree, Location.TableauFour, Location.TableauFive, Location.TableauSix, Location.TableauSeven];
+
+    @property({ type: LoadingScreen }) loadingScreen: LoadingScreen;
 
     @property({ type: Node }) firstTableauNode: Node;
     @property({ type: Node }) secondTableauNode: Node;
@@ -58,14 +61,18 @@ export class Tableau extends Component {
 
     private secondDeck: Card[];
 
-    
+    private nbOfInitialCardsLoaded: number = 0;
+    private nbOfInitialCardsToLoad: number;
+
     onLoad(){
         Tableau.instance = this;
         (window as any).stackingScore = 0;
         (window as any).isStackedOnEmptyTableaux;
     }
 
-    start() {
+    starts() {
+        console.log("starts");
+
         (window as any).isStackedOnEmptyTableaux = false;
 
         this.initTableaux();
@@ -80,8 +87,6 @@ export class Tableau extends Component {
             this.resetLabel.string = "RESET";
             this.fetchLabel.string = "Fetch Assets";
         }
-        
-        
 
         this.fetchAssetsButton.on(Node.EventType.TOUCH_START, function() {
             if((window as any).assets === "Local") {
@@ -463,7 +468,7 @@ export class Tableau extends Component {
         ArrayUtil.shuffle(deck);
         return deck
     }
-
+    
 
     /**
    * Initializes the tableau at the beginning of the round.
@@ -480,12 +485,21 @@ export class Tableau extends Component {
         //     this.tableauxArray[i][this.tableauxArray[i].length - 1].flip();
         // }
 
+        console.log("we here");
+
+        this.nbOfInitialCardsLoaded = 0
+        //Tableau.instance.stockPile = [...cards];
+        this.nbOfInitialCardsToLoad = 7;
+
+        console.log("we're loading " + this.nbOfInitialCardsToLoad + "cards");
+
         for(let i = 0; i < 1; i++) {
             cards[0].changeCardLocation(Location.TableauOne);
             this.firstTableau.push(cards[0]);
             cards.splice(0, 1);
         }
         console.log(`[Tableau] First Tableau length: ${this.firstTableau.length}`);
+        this.firstTableau[this.firstTableau.length - 1].setOnImageLoadCallback(this.InitialCardsLoadedCallback);
         this.firstTableau[this.firstTableau.length - 1].flip();
 
         for(let i = 0; i < 2; i++) {
@@ -494,6 +508,7 @@ export class Tableau extends Component {
             cards.splice(0, 1); 
         }
         console.log(`[Tableau] Second Tableau length: ${this.secondTableau.length}`);
+        this.secondTableau[this.secondTableau.length - 1].setOnImageLoadCallback(this.InitialCardsLoadedCallback);
         this.secondTableau[this.secondTableau.length - 1].flip();
 
         for(let i = 0; i < 3; i++) {
@@ -502,6 +517,7 @@ export class Tableau extends Component {
             cards.splice(0, 1);
         }
         console.log(`[Tableau] third Tableau length: ${this.thirdTableau.length}`);
+        this.thirdTableau[this.thirdTableau.length - 1].setOnImageLoadCallback(this.InitialCardsLoadedCallback);
         this.thirdTableau[this.thirdTableau.length - 1].flip();
 
         for(let i = 0; i < 4; i++) {
@@ -510,6 +526,7 @@ export class Tableau extends Component {
             cards.splice(0, 1);
         }
         console.log(`[Tableau] Fourth Tableau length: ${this.fourthTableau.length}`);
+        this.fourthTableau[this.fourthTableau.length - 1].setOnImageLoadCallback(this.InitialCardsLoadedCallback);
         this.fourthTableau[this.fourthTableau.length - 1].flip();
 
         for(let i = 0; i < 5; i++) {
@@ -518,6 +535,7 @@ export class Tableau extends Component {
             cards.splice(0, 1);
         }
         console.log(`[Tableau] Fifth Tableau length: ${this.fifthTableau.length}`);
+        this.fifthTableau[this.fifthTableau.length - 1].setOnImageLoadCallback(this.InitialCardsLoadedCallback);
         this.fifthTableau[this.fifthTableau.length - 1].flip();
 
         for(let i = 0; i < 6; i++) {
@@ -526,6 +544,7 @@ export class Tableau extends Component {
             cards.splice(0, 1);
         }
         console.log(`[Tableau] sixth Tableau length: ${this.sixthTableau.length}`);
+        this.sixthTableau[this.sixthTableau.length - 1].setOnImageLoadCallback(this.InitialCardsLoadedCallback);
         this.sixthTableau[this.sixthTableau.length - 1].flip();
 
         for(let i = 0; i < 7; i++) {
@@ -534,10 +553,13 @@ export class Tableau extends Component {
             cards.splice(0, 1);
         }
         console.log(`[Tableau] seventh Tableau length: ${this.seventhTableau.length}`);
+        this.seventhTableau[this.seventhTableau.length - 1].setOnImageLoadCallback(this.InitialCardsLoadedCallback);
         this.seventhTableau[this.seventhTableau.length - 1].flip();
 
         Tableau.instance.stockPile = [...cards];
+        this.nbOfInitialCardsToLoad += Tableau.instance.stockPile.length;
         for(let i = 0; i < Tableau.instance.stockPile.length; i++) {
+            Tableau.instance.stockPile[i].setOnImageLoadCallback(this.InitialCardsLoadedCallback);
             Tableau.instance.stockPile[i].flip();
             Tableau.instance.stockPile[i].changeCardLocation(Location.Stock);
         }
@@ -550,7 +572,24 @@ export class Tableau extends Component {
         this.stackPileOnDeal();
     }
 
-    
+    InitialCardsLoadedCallback()
+    {
+        Tableau.instance.OneInitialCardLoaded();
+    }
+
+    OneInitialCardLoaded()
+    {
+        this.nbOfInitialCardsLoaded++;
+        console.log("single card loaded!!!!!!!!!!! " + this.nbOfInitialCardsLoaded + " we need " + this.nbOfInitialCardsToLoad);
+
+        if(this.nbOfInitialCardsLoaded >= this.nbOfInitialCardsToLoad)
+        {
+            console.log("All cards Loaded!!!!!!!!!!!!!!");
+
+            if(this.loadingScreen != null)
+                this.loadingScreen.toggle(false);
+        }
+    }
 
     /**
      * Changes the array that the card being moved is in.

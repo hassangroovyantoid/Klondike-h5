@@ -2,7 +2,7 @@
   "ver": "1.0.23",
   "importer": "image",
   "imported": true,
-  "uuid": "33db09e6-8266-4361-8de0-b40345158595",
+  "uuid": "9dd59182-1946-4ba0-a1d9-e4148b2f5070",
   "files": [
     ".json",
     ".png"
@@ -10,14 +10,14 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "33db09e6-8266-4361-8de0-b40345158595@6c48a",
-      "displayName": "CLUBS5",
+      "uuid": "9dd59182-1946-4ba0-a1d9-e4148b2f5070@6c48a",
+      "displayName": "Loading_Icon",
       "id": "6c48a",
       "name": "texture",
       "userData": {
         "wrapModeS": "clamp-to-edge",
         "wrapModeT": "clamp-to-edge",
-        "imageUuidOrDatabaseUri": "33db09e6-8266-4361-8de0-b40345158595",
+        "imageUuidOrDatabaseUri": "9dd59182-1946-4ba0-a1d9-e4148b2f5070",
         "isUuid": true,
         "minfilter": "linear",
         "magfilter": "linear",
@@ -33,29 +33,29 @@
     },
     "f9941": {
       "importer": "sprite-frame",
-      "uuid": "33db09e6-8266-4361-8de0-b40345158595@f9941",
-      "displayName": "CLUBS5",
+      "uuid": "9dd59182-1946-4ba0-a1d9-e4148b2f5070@f9941",
+      "displayName": "Loading_Icon",
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {
-        "trimType": "none",
+        "trimType": "auto",
         "trimThreshold": 1,
         "rotated": false,
         "offsetX": 0,
         "offsetY": 0,
         "trimX": 0,
         "trimY": 0,
-        "width": 501,
-        "height": 726,
-        "rawWidth": 501,
-        "rawHeight": 726,
+        "width": 109,
+        "height": 135,
+        "rawWidth": 109,
+        "rawHeight": 135,
         "borderTop": 0,
         "borderBottom": 0,
         "borderLeft": 0,
         "borderRight": 0,
         "packable": true,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "33db09e6-8266-4361-8de0-b40345158595@6c48a",
+        "imageUuidOrDatabaseUri": "9dd59182-1946-4ba0-a1d9-e4148b2f5070@6c48a",
         "atlasUuid": ""
       },
       "ver": "1.0.9",
@@ -70,9 +70,6 @@
     "type": "sprite-frame",
     "fixAlphaTransparencyArtifacts": true,
     "hasAlpha": true,
-    "redirect": "33db09e6-8266-4361-8de0-b40345158595@f9941",
-    "compressSettings": {
-      "useCompressTexture": false
-    }
+    "redirect": "9dd59182-1946-4ba0-a1d9-e4148b2f5070@f9941"
   }
 }
